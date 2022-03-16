@@ -1,0 +1,28 @@
+# Agent Queue 'Azure Pipelines' was used with unrecognized Agent Specification, vmImage property must be specified to determine image - https://docs.microsoft.com/en-us/azure/devops/pipelines/agents/hosted?view=azure-devops&tabs=yaml#software
+variables:
+- name: BuildParameters.antBuildFile
+  value: createLevelRequest.xml
+name: $(date:yyyyMMdd)$(rev:.r)
+resources:
+  repositories:
+  - repository: self
+    type: git
+    ref: refs/heads/main
+jobs:
+- job: Job_1
+  displayName: Agent job 1
+  pool:
+    name: Azure Pipelines
+  steps:
+  - checkout: self
+    clean: true
+  - task: Ant@1
+    displayName: Ant -propertyfile levelrequest.properties createLevelRequest.xml
+    inputs:
+      antBuildFile: $(BuildParameters.antBuildFile)
+      options: -propertyfile levelrequest.properties
+      targets: createLevelRequest
+      publishJUnitResults: false
+      antHomeUserInputPath: C:/ALM/ant
+      jdkVersion: 1.11
+...
