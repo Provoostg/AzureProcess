@@ -63,13 +63,6 @@
 		<condition property="startAlm" value="true">
 			<istrue value="${startALMCLI}"/>
 		</condition>
-                <condition property="projectStream" value="${alm.projectStream.buildPrefix}"
-                                                    else="${alm.projectStream.buildPrefix}-${alm.projectStream.buildSuffix}">
-                   <or>
-                   <not> <isset property="alm.projectStream.buildSuffix"/> </not>
-                   <equals arg1="${alm.projectStream.buildSuffix}" arg2=""/>
-                   </or>
-                </condition>
 	</target>
 
 	<target name="do_something">
@@ -128,7 +121,7 @@ build.${alm.environment.name}.artifact.includes=${copy.includes}
 		<exec executable="${command.exe}" output="${resultLogFile}" resultproperty="clrResult"
                       dir="${alm.commandline.installLocation}" failonerror="false">
 			<arg line="${command.name} clr -serverhost:${alm.server} -user:${alm.userid} -password:${alm.password} "/>
-			<arg line="-project:${alm.project.name} -projectstream:${projectStream} -level:${alm.levelRequest.levelName} "/>
+			<arg line="-project:${alm.project.name} -projectstream:${alm.projectStream} -level:${alm.levelRequest.levelName} "/>
 			<arg line="${parm.vcrtag} -description:azure.url=${env.BUILD_BUILDURI} ${parm.package} ${parm.redeliver} ${parm.buildnumber} ${parm.deploysToExecute}"/>
 			<arg line="-propertyfile:clr.properties "/>
 			<!-- TODO: create this paramfile on the fly instead of replacing values in a skeleton -->
