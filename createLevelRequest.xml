@@ -54,9 +54,9 @@
 		<property name="propertyfile" value="${source}/s/levelrequest.properties"/>
 		<loadproperties srcfile="${propertyfile}"/>
 		<property name="target" value="${target.location}"/>
-		<echo message="Start Level Request=${startALMCLI}"/>
 		<echo message="project.revision=${project.revision}"/>
 		<property name="startALMCLI" value="true"/>
+		<echo message="Start Level Request=${startALMCLI}"/>
 		<condition property="startAlm" value="true">
 			<istrue value="${startALMCLI}"/>
 		</condition>
