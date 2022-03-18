@@ -128,14 +128,14 @@ build.${alm.environment.name}.artifact.includes=${copy.includes}
 <echo message="${parm.vcrtag} -description:azure.url=${env.BUILD_BUILDURI} ${parm.package} ${parm.redeliver} ${parm.buildnumber} ${parm.deploysToExecute}"/>
 <echo message="-propertyfile:clr.properties "/>
 <echo message="-paramfile:${source}/paramfile.properties"/>
-		<exec executable="${command.exe}" output="${resultLogFile}" resultproperty="clrResult"
+		<exec executable="${command.name}" output="${resultLogFile}" resultproperty="clrResult"
                       dir="${alm.commandline.installLocation}" failonerror="false">
-			<arg line="${command.name} clr -serverhost:${alm.server} -user:${alm.userid} -password:${alm.password} "/>
+			<arg line="clr -serverhost:${alm.server} -user:${alm.userid} -password:${alm.password} "/>
 			<arg line="-project:${alm.project.name} -projectstream:${projectStream} -level:${alm.levelRequest.levelName} "/>
 			<arg line="${parm.vcrtag} -description:azure.url=${env.BUILD_BUILDURI} ${parm.package} ${parm.redeliver} ${parm.buildnumber} ${parm.deploysToExecute}"/>
-			<arg value="-propertyfile:clr.properties "/>
+			<arg line="-propertyfile:clr.properties "/>
 			<!-- TODO: create this paramfile on the fly instead of replacing values in a skeleton -->
-			<arg value="-paramfile:${source}/paramfile.properties"/>
+			<arg line="-paramfile:${source}/paramfile.properties"/>
 		</exec>
                 <if> <available file="${resultLogFile}"/>
                     <then> <loadfile srcfile="${resultLogFile}" property="clrResultLog"/> </then>
