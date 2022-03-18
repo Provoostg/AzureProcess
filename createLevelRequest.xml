@@ -99,7 +99,7 @@ build.${alm.environment.name}.artifact.includes=${copy.includes}
 		<condition property="command.exe" value="cmd.exe" else="sh">
 			<os family="windows"/>
 		</condition>
-		<condition property="command.name" value="alm.cmd" else="./alm.sh">
+		<condition property="command.name" value="/D /S /C alm.cmd" else="./alm.sh">
 			<os family="windows"/>
 		</condition>
 		<property name="alm.vcrtag" value=""/>
