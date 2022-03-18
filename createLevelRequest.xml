@@ -13,6 +13,8 @@
 			- env.BUILD_SOURCEVERSION : Commit ID
 			- env.BUILD_BUILDURI : Url of the project Build in vstfs repo
 			- env.BUILD_REPOSITORY_URI : Url of the VCR project
+			- env.BUILD_REPOSITORY_LOCALPATH : Repository Workspace
+			- env.BUILD_BINARIESDIRECTORY : Binaries location
 
 		for launching the ALM LevelRequest : properties are taken from a Ant property file: alm_[project].properties
 		        or defined in the Azure's project directly. See the property file for Azure names
@@ -49,7 +51,7 @@
 	<property environment="env"/>
 	<target name="init">
 		<!-- Define source and target -->
-		<property name="source" value="${env.AGENT_BUILDDIRECTORY}/s"/>
+		<property name="source" value="${env.BUILD_REPOSITORY_LOCALPATH}"/>
 		<!-- Specific properties for creating the LR in IKAN ALM -->
 		<property name="propertyfile" value="${source}/levelrequest.properties"/>
 		<loadproperties srcfile="${propertyfile}"/>
@@ -123,11 +125,6 @@ build.${alm.environment.name}.artifact.includes=${copy.includes}
 		<condition property="parm.deploysToExecute" value="" else="-deploysToExecute:${deployEnvironments}">
 			<equals arg1="${deployEnvironments}" arg2=""/>
 		</condition>
-<echo message="${command.name} clr -serverhost:${alm.server} -user:${alm.userid} -password:${alm.password} "/>
-<echo message="-project:${alm.project.name} -projectstream:${projectStream} -level:${alm.levelRequest.levelName} "/>
-<echo message="${parm.vcrtag} -description:azure.url=${env.BUILD_BUILDURI} ${parm.package} ${parm.redeliver} ${parm.buildnumber} ${parm.deploysToExecute}"/>
-<echo message="-propertyfile:clr.properties "/>
-<echo message="-paramfile:${source}/paramfile.properties"/>
 		<exec executable="${command.exe}" output="${resultLogFile}" resultproperty="clrResult"
                       dir="${alm.commandline.installLocation}" failonerror="false">
 			<arg line="${command.name} clr -serverhost:${alm.server} -user:${alm.userid} -password:${alm.password} "/>
