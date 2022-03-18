@@ -51,7 +51,7 @@
 		<!-- Define source and target -->
 		<property name="source" value="${env.AGENT_BUILDDIRECTORY}"/>
 		<!-- Specific properties for creating the LR in IKAN ALM -->
-		<property name="propertyfile" value="${source}/levelrequest.properties"/>
+		<property name="propertyfile" value="${source}/s/levelrequest.properties"/>
 		<loadproperties srcfile="${propertyfile}"/>
 		<property name="target" value="${target.location}"/>
 		<echo message="Start Level Request=${startALMCLI}"/>
