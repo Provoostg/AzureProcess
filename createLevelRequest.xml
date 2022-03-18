@@ -1,1 +1,152 @@
-test
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="clrAzureIkanalm" basedir="." default="createLevelRequest">
+
+	<description>
+		Sample Ant script that implements the integration of Azure with IKAN ALM Level Requests
+                It starts a Level Request via the CommandLine Interface (CLI) and may do some things before.
+		
+                Parameters used :
+		from the Azure's environment :
+			- env.AGENT_BUILDDIRECTORY : Workspace of the project
+			- env.AGENT_JOBNAME : Job of the project
+			- env.BUILD_BUILDNUMBER : Build number
+			- env.BUILD_SOURCEVERSION : Commit ID
+			- env.BUILD_BUILDURI : Url of the project
+			- env.BUILD_REPOSITORY_URI : Url of the VCR project
+
+		for launching the ALM LevelRequest : properties are taken from a Ant property file: alm_[project].properties
+		        or defined in the Azure's project directly. See the property file for Azure names
+
+			- alm.commandline.installLocation : commandline folder (e.g.: /ikan/alm/commandline)
+			- alm.server (e.g.: ikanalm)
+			- alm.userid (e.g.: global)
+			- alm.password (e.g.: global)
+			- alm.project.name (e.g.: MYSAMPLE)
+			- alm.levelRequest.levelName (e.g.: levelName)
+			- alm.package.name (e.g.: packageName)
+			- alm.redeliver (e.g.: true or false)
+			- alm.buildNumber : number if not last one
+			- alm.environment.name (e.g.: environmentName) (Better defined in minus characters)
+			- startALMCLI : true/false to run the CLI
+			- resultLogFile : file of the log
+			- deployEnvironments :
+
+		TODO : optional parameters ?
+			- project.version : project version
+			- project.revision : project version + ${BUILD_BUILDNUMBER}
+		        - target.location or target : Used for copy action if necessary
+		        - copy.includes : Used for copy action if necessary
+
+	</description>
+
+        <path id="antext.classpath">
+          <fileset dir="${basedir}/antext/lib"> <include name="*.jar"/> </fileset>
+        </path>
+        <taskdef resource="net/sf/antcontrib/antlib.xml" classpathref="antext.classpath"/>
+        <typedef name="isgreaterthan" classname="net.sf.antcontrib.logic.condition.IsGreaterThan" classpathref="antext.classpath"/>
+        <typedef name="islessthan"    classname="net.sf.antcontrib.logic.condition.IsLessThan"    classpathref="antext.classpath"/>
+
+	<property environment="env"/>
+	<target name="init">
+		<!-- Define source and target -->
+		<property name="source" value="${env.AGENT_BUILDDIRECTORY}"/>
+		<!-- Specific properties for creating the LR in IKAN ALM -->
+		<property name="propertyfile" value="${source}/levelrequest.properties"/>
+		<loadproperties srcfile="${propertyfile}"/>
+		<property name="target" value="${target.location}"/>
+		<echo message="Start Level Request=${startALMCLI}"/>
+		<echo message="project.revision=${project.revision}"/>
+		<property name="startALMCLI" value="true"/>
+		<condition property="startAlm" value="true">
+			<istrue value="${startALMCLI}"/>
+		</condition>
+                <condition property="projectStream" value="${alm.projectStream.buildPrefix}"
+                                                    else="${alm.projectStream.buildPrefix}-${alm.projectStream.buildSuffix}">
+                   <or>
+                   <not> <isset property="alm.projectStream.buildSuffix"/> </not>
+                   <equals arg1="${alm.projectStream.buildSuffix}" arg2=""/>
+                   </or>
+                </condition>
+	</target>
+
+	<target name="do_something">
+
+		<!-- copy the file(s) to the target -->
+<!--
+                <mkdir dir="${target}"/>
+		<echo message="Copy file(s) to target = ${target}"/>
+		<copy todir="${target}" overwrite="yes" verbose="true">
+		    <fileset dir="${source}" includes="${copy.includes}" excludes="${ant.project.name}.xml"/>
+		</copy>
+-->
+	</target>
+
+	<target name="createLevelRequest" if="startAlm" depends="init,do_something">
+                <echo file="${source}/paramfile.properties">#----#
+build.${alm.environment.name}.azure.uri=${env.BUILD_BUILDURI}
+build.${alm.environment.name}.azure.buildtag=${env.BUILD_SOURCEVERSION}
+build.${alm.environment.name}.azure.buildnumber=${env.BUILD_BUILDNUMBER}
+build.${alm.environment.name}.azure.jobname=${env.AGENT_JOBNAME}
+build.${alm.environment.name}.project.version=${project.version}
+build.${alm.environment.name}.project.revision=${project.revision}
+build.${alm.environment.name}.artifact.location=${target.location}
+build.${alm.environment.name}.artifact.includes=${copy.includes}
+</echo>
+
+                <echo message="clr ${alm.project.name} ${projectStream} ${alm.levelRequest.levelName} ${env.BUILD_NUMBER} User=${alm.userid}"/>
+		<!-- Create an IKAN ALM LevelRequest using the commandline : -->
+		<condition property="command.exe" value="cmd.exe" else="sh">
+			<os family="windows"/>
+		</condition>
+		<condition property="command.name" value="/C alm.cmd" else="./alm.sh">
+			<os family="windows"/>
+		</condition>
+		<property name="alm.vcrtag" value=""/>
+		<condition property="parm.vcrtag" value="" else="-tag:${alm.vcrtag}">
+			<equals arg1="${alm.vcrtag}" arg2=""/>
+		</condition>
+		<property name="alm.package.name" value=""/>
+		<condition property="parm.package" value="" else="-package:${alm.package.name}">
+			<equals arg1="${alm.package.name}" arg2=""/>
+		</condition>
+		<property name="alm.redeliver" value="false"/>
+		<condition property="parm.redeliver" value="-redeliver:${alm.redeliver}" else="">
+			<istrue value="${alm.redeliver}"/>
+		</condition>
+  <!--echo message="${parm.redeliver}"/-->
+		<property name="alm.buildNumber" value=""/>
+		<condition property="parm.buildnumber" value="" else="-buildnumber:${alm.buildNumber}">
+			<equals arg1="${alm.buildNumber}" arg2=""/>
+		</condition>
+		<property name="deployEnvironments" value=""/>
+		<condition property="parm.deploysToExecute" value="" else="-deploysToExecute:${deployEnvironments}">
+			<equals arg1="${deployEnvironments}" arg2=""/>
+		</condition>
+
+		<exec executable="${command.exe}" output="${resultLogFile}" resultproperty="clrResult"
+                      dir="${alm.commandline.installLocation}" failonerror="false">
+			<arg line="${command.name} clr -serverhost:${alm.server} -user:${alm.userid} -password:${alm.password} "/>
+			<arg line="-project:${alm.project.name} -projectstream:${projectStream} -level:${alm.levelRequest.levelName} "/>
+			<arg line="${parm.vcrtag} -description:azure.url=${env.BUILD_BUILDURI} ${parm.package} ${parm.redeliver} ${parm.buildnumber} ${parm.deploysToExecute}"/>
+			<arg value="-propertyfile:clr.properties "/>
+			<!-- TODO: create this paramfile on the fly instead of replacing values in a skeleton -->
+			<arg value="-paramfile:${source}/paramfile.properties"/>
+		</exec>
+                <if> <available file="${resultLogFile}"/>
+                    <then> <loadfile srcfile="${resultLogFile}" property="clrResultLog"/> </then>
+                </if>
+                <property name="clrResultLog"  value="Level Request for BUILD_NUMBER=${env.BUILD_BUILDNUMBER} is not created"/>
+                <propertyregex casesensitive="false" defaultValue="0"
+                      property="levelRequestOid"  input="${clrResultLog}"
+                        regexp="Level\ Request\ ([0-9]+)\ was\ successfully\ created" select="\1"/>
+                <if> <equals arg1="${levelRequestOid}" arg2="0"/>
+                    <then> <fail message="ERROR LevelRequest Log: ${clrResultLog}"/> </then>
+                </if>
+		<!-- delete the paramfile (and properties?) so that it gets refreshed for each build -->
+		<delete file="${source}/paramfile.properties"/>
+                <echo file="${propertyfile}" append="true">
+alm.levelRequest.oid=${levelRequestOid}
+</echo>
+	</target>
+
+</project>
