@@ -99,7 +99,7 @@ build.${alm.environment.name}.artifact.includes=${copy.includes}
 		<condition property="command.exe" value="cmd.exe" else="sh">
 			<os family="windows"/>
 		</condition>
-		<condition property="command.name" value="alm.cmd" else="./alm.sh">
+		<condition property="command.name" value="/C alm.cmd" else="./alm.sh">
 			<os family="windows"/>
 		</condition>
 		<property name="alm.vcrtag" value=""/>
@@ -128,9 +128,9 @@ build.${alm.environment.name}.artifact.includes=${copy.includes}
 <echo message="${parm.vcrtag} -description:azure.url=${env.BUILD_BUILDURI} ${parm.package} ${parm.redeliver} ${parm.buildnumber} ${parm.deploysToExecute}"/>
 <echo message="-propertyfile:clr.properties "/>
 <echo message="-paramfile:${source}/paramfile.properties"/>
-		<exec executable="${command.name}" output="${resultLogFile}" resultproperty="clrResult"
+		<exec executable="${command.exe}" output="${resultLogFile}" resultproperty="clrResult"
                       dir="${alm.commandline.installLocation}" failonerror="false">
-			<arg line="clr -serverhost:${alm.server} -user:${alm.userid} -password:${alm.password} "/>
+			<arg line="${command.name} clr -serverhost:${alm.server} -user:${alm.userid} -password:${alm.password} "/>
 			<arg line="-project:${alm.project.name} -projectstream:${projectStream} -level:${alm.levelRequest.levelName} "/>
 			<arg line="${parm.vcrtag} -description:azure.url=${env.BUILD_BUILDURI} ${parm.package} ${parm.redeliver} ${parm.buildnumber} ${parm.deploysToExecute}"/>
 			<arg line="-propertyfile:clr.properties "/>
