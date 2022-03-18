@@ -53,6 +53,7 @@
 		<!-- Specific properties for creating the LR in IKAN ALM -->
 		<property name="propertyfile" value="${source}/levelrequest.properties"/>
 		<loadproperties srcfile="${propertyfile}"/>
+		<var file="${propertyfile}"/>
 		<property name="target" value="${target.location}"/>
 		<echo message="project.revision=${project.revision}"/>
 		<property name="startALMCLI" value="true"/>
@@ -122,7 +123,11 @@ build.${alm.environment.name}.artifact.includes=${copy.includes}
 		<condition property="parm.deploysToExecute" value="" else="-deploysToExecute:${deployEnvironments}">
 			<equals arg1="${deployEnvironments}" arg2=""/>
 		</condition>
-
+<echo message="${command.name} clr -serverhost:${alm.server} -user:${alm.userid} -password:${alm.password} "/>
+<echo message="-project:${alm.project.name} -projectstream:${projectStream} -level:${alm.levelRequest.levelName} "/>
+<echo message="${parm.vcrtag} -description:azure.url=${env.BUILD_BUILDURI} ${parm.package} ${parm.redeliver} ${parm.buildnumber} ${parm.deploysToExecute}"/>
+<echo message="-propertyfile:clr.properties "/>
+<echo message="-paramfile:${source}/paramfile.properties"/>
 		<exec executable="${command.exe}" output="${resultLogFile}" resultproperty="clrResult"
                       dir="${alm.commandline.installLocation}" failonerror="false">
 			<arg line="${command.name} clr -serverhost:${alm.server} -user:${alm.userid} -password:${alm.password} "/>
