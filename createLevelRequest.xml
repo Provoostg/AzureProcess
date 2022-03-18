@@ -11,7 +11,7 @@
 			- env.AGENT_JOBNAME : Job of the project
 			- env.BUILD_BUILDNUMBER : Build number
 			- env.BUILD_SOURCEVERSION : Commit ID
-			- env.BUILD_BUILDURI : Url of the project
+			- env.BUILD_BUILDURI : Url of the project Build in vstfs repo
 			- env.BUILD_REPOSITORY_URI : Url of the VCR project
 
 		for launching the ALM LevelRequest : properties are taken from a Ant property file: alm_[project].properties
@@ -49,9 +49,9 @@
 	<property environment="env"/>
 	<target name="init">
 		<!-- Define source and target -->
-		<property name="source" value="${env.AGENT_BUILDDIRECTORY}"/>
+		<property name="source" value="${env.AGENT_BUILDDIRECTORY}/s"/>
 		<!-- Specific properties for creating the LR in IKAN ALM -->
-		<property name="propertyfile" value="${source}/s/levelrequest.properties"/>
+		<property name="propertyfile" value="${source}/levelrequest.properties"/>
 		<loadproperties srcfile="${propertyfile}"/>
 		<property name="target" value="${target.location}"/>
 		<echo message="project.revision=${project.revision}"/>
@@ -93,7 +93,7 @@ build.${alm.environment.name}.artifact.location=${target.location}
 build.${alm.environment.name}.artifact.includes=${copy.includes}
 </echo>
 
-                <echo message="clr ${alm.project.name} ${projectStream} ${alm.levelRequest.levelName} ${env.BUILD_NUMBER} User=${alm.userid}"/>
+                <echo message="clr ${alm.project.name} ${projectStream} ${alm.levelRequest.levelName} ${env.BUILD_BUILDNUMBER} User=${alm.userid}"/>
 		<!-- Create an IKAN ALM LevelRequest using the commandline : -->
 		<condition property="command.exe" value="cmd.exe" else="sh">
 			<os family="windows"/>
