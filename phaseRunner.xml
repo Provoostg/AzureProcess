@@ -1,0 +1,162 @@
+<project name="phaseRunner" default="phaseRunner" basedir=".">
+
+    <!-- ************************************************* -->
+    <!-- Expand Phase files into basedir before executing  -->
+    <!-- ************************************************* -->
+    <!-- *********************************************************** -->
+    <!-- Classpath files valid for Ant-contrib Tasks                 -->
+    <!-- *********************************************************** -->
+    <path id="antext.classpath">
+      <fileset dir="${basedir}/antext/lib"> <include name="*.jar"/> </fileset>
+    </path>
+    <!-- Using ant-contrib-1.0b3.jar -->
+    <taskdef resource="net/sf/antcontrib/antlib.xml" classpathref="antext.classpath"/>
+    <taskdef name="un7z" classname="org.apache.ant.compress.taskdefs.Un7z" classpathref="antext.classpath"/>
+
+    <!-- ************************************************* -->
+    <!-- Initialization and reload properties              -->
+    <!-- ************************************************* -->
+    <target name="initPhaseRunner">
+        <tstamp prefix="NOW"/>
+        <property name="propertyFileSource" value="${source}/alm_ant.properties"/>
+        <property name="propertyFileALM" value="alm_ant.properties"/>
+        <!-- Line to load properties into the [source]/property file       -->
+        <property file="${propertyFileSource}"/>
+        <!-- Line to expand properties into the property file              -->
+        <var file="${propertyFileALM}"/>
+    </target>
+    <!-- ************************************************* -->
+    <!-- Validate Phase archive location and name          -->
+    <!-- ************************************************* -->
+    <target name="validPhaseArchive">
+        <!-- Mandatory Phase info parameters                               -->
+        <property name="phaseCatalog.location" value="C:/IKAN/system/phaseCatalog"/>
+        <fail message="ERROR: phaseCatalog.location parameter cannot be empty!">
+            <condition> <equals arg1="${phaseCatalog.location}" arg2=""/> </condition>
+        </fail>
+
+        <property name="phaseArchiveName"  value="phase.zip"/>
+        <fail message="ERROR: phaseArchiveName parameter cannot be empty!">
+            <condition> <equals arg1="${phaseArchiveName}" arg2=""/> </condition>
+        </fail>
+
+        <property name="phase.main.script" value="phase.xml"/>
+        <fail message="ERROR: phase.main.script parameter cannot be empty!">
+            <condition> <equals arg1="${phase.main.script}" arg2=""/> </condition>
+        </fail>
+
+        <propertyregex property="phase.suffix" input="${phaseArchiveName}"
+                       regexp=".*\.([\w]+)$" select="\1"/>
+        <property name="phase.suffix"      value="zip"/>
+        <condition property="isZipFile">
+          <or>
+          <equals arg1="${phase.suffix}" arg2="jar"/>
+          <equals arg1="${phase.suffix}" arg2="zip"/>
+          </or>
+        </condition>
+        <condition property="isGzipFile">
+          <equals arg1="${phase.suffix}" arg2="gz"/>
+        </condition>
+        <condition property="isTGZFile">
+          <equals arg1="${phase.suffix}" arg2="tgz"/>
+        </condition>
+        <condition property="is7zFile">
+          <equals arg1="${phase.suffix}" arg2="7z"/>
+        </condition>
+        <basename property="phaseName" file="${phaseArchiveName}" suffix="${phase.suffix}"/>
+        <propertyregex property="phase.basename" input="${phaseName}"
+                       regexp="(.*)\-.*" select="\1"/>
+        <property name="phase.basename"    value=""/>
+        <if> <isset property="isGzipFile"/>
+            <then>
+                <propertyregex property="phase.version"  input="${phaseName}"
+                               regexp="${phase.basename}\-(.*)\.tar" select="\1"/>
+            </then>
+            <else>
+                <propertyregex property="phase.version"  input="${phaseName}"
+                               regexp="${phase.basename}\-(.*)" select="\1"/>
+            </else>
+        </if>
+        <property name="phase.version"     value=""/>
+        <propertyregex property="phase.classname" input="${phase.basename}"
+                       regexp=".*\.([\w]+)$" select="\1"/>
+        <property name="phase.classname"   value=""/>
+        <!--echo message=""/-->
+
+        <property name="targetDir"         value="${basedir}"/>
+        <property name="phaseArchiveFile"  value="${phaseCatalog.location}/${phase.basename}/${phaseArchiveName}"/>
+        <condition property="phaseArchive" value="true">
+            <available file="${phaseArchiveFile}"/> 
+        </condition>
+        <!-- Optional ALM parameters                                       -->
+        <property name="phase.position"    value="1"/>
+        <fail message="ERROR: phase.position parameter cannot be empty!">
+            <condition> <equals arg1="${phase.position}" arg2=""/> </condition>
+        </fail>
+    </target>
+    <!-- ************************************************* -->
+    <!-- Main target calling the expanded Phase            -->
+    <!-- ************************************************* -->
+    <target name="phaseRunner" depends="initPhaseRunner,extractPhaseArchive">
+        <copy todir="${phaseDir}" overwrite="true">
+            <fileset dir="${source}" includes="${propertyFileSource},${propertyFileALM}"/>
+        </copy>
+                                <!--  output="${phase.classname}.log" -->
+        <ant dir="${phaseDir}" antfile="${phase.main.script}" inheritAll="false">
+            <property name="excludedFiles"    value="antext/**,phaseRunner.*,${propertyFileSource},${propertyFileALM},*.log"/>
+        </ant>
+    </target>
+    <!-- ************************************************* -->
+    <!-- Extract phase Archive                             -->
+    <!-- ************************************************* -->
+    <target name="extractPhaseArchive" if="phaseArchive" depends="validPhaseArchive,phaseArchiveFailed">
+        <property name="overwrite"         value="false"/>
+        <property name="phaseDir"          value="${targetDir}/${phase.basename}_${phase.position}"/>
+        <mkdir dir="${phaseDir}"/>
+        <antcall target="unzip_phaseArchiveFile"/>
+        <antcall target="gunzip_phaseArchiveFile"/>
+        <antcall target="gunzipTGZ_phaseArchiveFile"/>
+        <antcall target="un7z_phaseArchiveFile"/>
+        <echo level="info"> ************************************************ </echo>
+        <echo level="info"> ${phaseArchiveName} expanded to ${phaseDir}</echo>
+        <echo level="info"> ************************************************ </echo>
+        <fail message="ERROR: phase.main.script=${phaseDir}/${phase.basename}_${phase.position}/${phase.main.script} parameter is not found in the Phase!">
+            <condition> 
+            <not> <available file="${phaseDir}/${phase.main.script}"/> </not>
+            </condition>
+        </fail>
+    </target>
+    <!-- For unzip [phaseArchiveFile].zip (or .jar) file to phaseDir folder    -->
+    <target name="unzip_phaseArchiveFile" if="isZipFile">
+        <unzip src="${phaseArchiveFile}" dest="${phaseDir}" overwrite="${overwrite}"/>
+    </target>
+    <!-- For gunzip [phaseArchiveFile].tar.gz file to phaseDir folder    -->
+    <target name="gunzip_phaseArchiveFile" if="isGzipFile">
+        <basename property="tarFile" file="${phaseArchiveFile}" suffix="${file.suffix}"/>
+        <dirname property="tarDir" file="${phaseArchiveFile}"/>
+        <gunzip src="${phaseArchiveFile}"/>
+        <untar src="${tarDir}/${tarFile}" dest="${phaseDir}" overwrite="${overwrite}"/>
+        <delete file="${tarDir}/${tarFile}.tar"/>
+    </target>
+    <!-- For gunzip [phaseArchiveFile].tgz file to phaseDir folder    -->
+    <target name="gunzipTGZ_phaseArchiveFile" if="isTGZFile">
+        <basename property="tarFile" file="${phaseArchiveFile}" suffix="${file.suffix}"/>
+        <dirname property="tarDir" file="${phaseArchiveFile}"/>
+        <gunzip src="${phaseArchiveFile}" dest="${tarDir}/${tarFile}.tar"/>
+        <untar src="${tarDir}/${tarFile}.tar" dest="${phaseDir}" overwrite="${overwrite}"/>
+        <delete file="${tarDir}/${tarFile}.tar"/>
+    </target>
+    <!-- For un7z [phaseArchiveFile].7z file to phaseDir folder    -->
+    <target name="un7z_phaseArchiveFile" if="is7zFile">
+        <un7z src="${phaseArchiveFile}" dest="${phaseDir}" overwrite="${overwrite}"/>
+    </target>
+    <!-- ************************************************* -->
+    <!-- Report build Archive error                        -->
+    <!-- ************************************************* -->
+    <target name="phaseArchiveFailed" unless="phaseArchive">
+        <echo> ************************************************ </echo>
+        <echo> Check for ${phaseArchiveFile} FILE NOT FOUND! </echo>
+        <echo> ************************************************ </echo>
+        <fail message="Task FAILED, check for ${phaseArchiveFile} FILE NOT FOUND!"/>
+    </target>
+</project>
