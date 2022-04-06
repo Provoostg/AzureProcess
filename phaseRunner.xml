@@ -13,6 +13,7 @@
     <taskdef resource="net/sf/antcontrib/antlib.xml" classpathref="antext.classpath"/>
     <taskdef name="un7z" classname="org.apache.ant.compress.taskdefs.Un7z" classpathref="antext.classpath"/>
 
+    <property environment="system"/>
     <!-- ************************************************* -->
     <!-- Initialization and reload properties              -->
     <!-- ************************************************* -->
@@ -83,7 +84,7 @@
         <property name="phase.classname"   value=""/>
         <!--echo message=""/-->
 
-        <property name="targetDir"         value="${basedir}"/>
+        <property name="targetDir"         value="${source}"/>
         <property name="phaseArchiveFile"  value="${phaseCatalog.location}/${phase.basename}/${phaseArchiveName}"/>
         <condition property="phaseArchive" value="true">
             <available file="${phaseArchiveFile}"/> 
@@ -101,8 +102,8 @@
         <copy todir="${phaseDir}" overwrite="true">
             <fileset dir="${source}" includes="${propertyFileSource},${propertyFileALM}"/>
         </copy>
-                                <!--  output="${phase.classname}.log" -->
-        <ant dir="${phaseDir}" antfile="${phase.main.script}" inheritAll="false">
+                                <!--  inheritAll="false" output="${phase.classname}.log" -->
+        <ant dir="${phaseDir}" antfile="${phase.main.script}">
             <property name="excludedFiles"    value="antext/**,phaseRunner.*,${propertyFileSource},${propertyFileALM},*.log"/>
         </ant>
     </target>
