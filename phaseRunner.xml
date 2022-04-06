@@ -41,9 +41,9 @@
             <condition> <equals arg1="${phaseArchiveName}" arg2=""/> </condition>
         </fail>
 
-        <property name="phase.main.script" value="phase.xml"/>
-        <fail message="ERROR: phase.main.script parameter cannot be empty!">
-            <condition> <equals arg1="${phase.main.script}" arg2=""/> </condition>
+        <property name="alm.phase.mainScript" value="phase.xml"/>
+        <fail message="ERROR: alm.phase.mainScript parameter cannot be empty!">
+            <condition> <equals arg1="${alm.phase.mainScript}" arg2=""/> </condition>
         </fail>
 
         <propertyregex property="phase.suffix" input="${phaseArchiveName}"
@@ -103,7 +103,7 @@
             <fileset dir="${source}" includes="${propertyFileSource},${propertyFileALM}"/>
         </copy>
                                 <!--  inheritAll="false" output="${phase.classname}.log" -->
-        <ant dir="${phaseDir}" antfile="${phase.main.script}">
+        <ant dir="${phaseDir}" antfile="${alm.phase.mainScript}">
             <property name="excludedFiles"    value="antext/**,phaseRunner.*,${propertyFileSource},${propertyFileALM},*.log"/>
         </ant>
     </target>
@@ -121,9 +121,9 @@
         <echo level="info"> ************************************************ </echo>
         <echo level="info"> ${phaseArchiveName} expanded to ${phaseDir}</echo>
         <echo level="info"> ************************************************ </echo>
-        <fail message="ERROR: phase.main.script=${phaseDir}/${phase.basename}_${phase.position}/${phase.main.script} parameter is not found in the Phase!">
+        <fail message="ERROR: alm.phase.mainScript=${phaseDir}/${phase.basename}_${phase.position}/${alm.phase.mainScript} parameter is not found in the Phase!">
             <condition> 
-            <not> <available file="${phaseDir}/${phase.main.script}"/> </not>
+            <not> <available file="${phaseDir}/${alm.phase.mainScript}"/> </not>
             </condition>
         </fail>
     </target>
