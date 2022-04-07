@@ -7,7 +7,8 @@
     <!-- Classpath files valid for Ant-contrib Tasks                 -->
     <!-- *********************************************************** -->
     <path id="antext.classpath">
-      <fileset dir="${basedir}/antext/lib"> <include name="*.jar"/> </fileset>
+      <!--fileset dir="${basedir}/antext/lib"> <include name="*.jar"/> </fileset-->
+      <fileset dir="${antext.lib.location}"> <include name="*.jar"/> </fileset>
     </path>
     <!-- Using ant-contrib-1.0b3.jar -->
     <taskdef resource="net/sf/antcontrib/antlib.xml" classpathref="antext.classpath"/>
