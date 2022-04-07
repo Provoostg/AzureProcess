@@ -42,7 +42,8 @@
 	</description>
 
         <path id="antext.classpath">
-          <fileset dir="${basedir}/antext/lib"> <include name="*.jar"/> </fileset>
+          <!--fileset dir="${basedir}/antext/lib"> <include name="*.jar"/> </fileset-->
+          <fileset dir="${antext.lib.location}"> <include name="*.jar"/> </fileset>
         </path>
         <taskdef resource="net/sf/antcontrib/antlib.xml" classpathref="antext.classpath"/>
         <typedef name="isgreaterthan" classname="net.sf.antcontrib.logic.condition.IsGreaterThan" classpathref="antext.classpath"/>
